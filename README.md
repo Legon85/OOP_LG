@@ -1,1 +1,1 @@
-# OOP_LG
+# This is my project about learning OOP on python
