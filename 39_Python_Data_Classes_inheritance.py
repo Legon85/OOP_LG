@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, InitVar
+from dataclasses import dataclass, field, InitVar, make_dataclass
 from typing import Any
 
 
@@ -103,7 +103,91 @@ class Book(Goods):
 
 b = Book(1000, 100, "Python OOP", "Mironov A. M.")
 print(b)
+
+
 # вывод будет следующий:
 # Goods: post_init  (вызван post_init для базового класса)
 # Goods: post_init  (вызван post_init для дочернего класса, чего и добивались)
 # Book(uid=1, price=1000, weight=100, title='Python OOP', author='Mironov A. M.')
+
+# Ещё немного усложним программу и добавим еще один атрибут (measure), который по смыслу будет
+# содержать габариты предмета из трёх значений(по умолчанию равны 0). Для этого аннотируем measure
+# список, который в свою очередь будет формироваться посредством вызова метода get_init_measure
+# отдельно написанного класса GoodsMethodsFactory (GoodsMethodsFactory.get_init_measure) присвоенного
+# в default_factory через field
+
+
+class GoodsMethodsFactory:
+    @staticmethod
+    def get_init_measure():
+        return [0, 0, 0]
+
+
+@dataclass
+class Goods:
+    current_uid = 0
+
+    uid: int = field(init=False)
+    price: Any = None
+    weight: Any = None
+
+    def __post_init__(self):
+        print("Goods: post_init")  # печатаем только для инициализации сработки метода __post_init__
+        Goods.current_uid += 1
+        self.uid = Goods.current_uid
+
+
+@dataclass
+class Book(Goods):
+    title: str = ""
+    author: str = ""
+    price: float = 0
+    weight: int | float = 0
+    measure: list = field(default_factory=GoodsMethodsFactory.get_init_measure)
+
+    def __post_init__(self):
+        super().__post_init__()
+        print("Goods: post_init")
+
+
+b = Book(1000, 100, "Python OOP", "Mironov A. M.")
+print(b)  # Book(uid=1, price=1000, weight=100, title='Python OOP', author='Mironov A. M.',
+
+
+# measure=[0, 0, 0])
+
+
+# Есть ещё один способ объявления dataclass с помощью функции make_dataclass(), которая получает в
+# качестве аргументов набор параметров, но основные из них:
+# cls_name - название нового класса(в виде строки)
+# fields - поля(локальные атрибуты) объектов класса
+# * - произвольный набор позиционных аргументов
+# bases - список базовых классов
+# namespace - словарь для определения атрибутов самого класса (например, так можно объявлять методы
+# класса)
+
+# предположим есть класс:
+class Car:
+    def __init__(self, model, max_speed, price):
+        self.model = model
+        self.max_speed = max_speed
+        self.price = price
+
+    def get_speed(self):
+        return self.max_speed
+
+
+# Создадим аналогичный класс с использованием ф-ции make_dataclass. Для начала добавим её из модуля в
+# шапке программы
+
+CarData = make_dataclass("CarData", [("model", str),
+                                     "max_speed",
+                                     ("price", float, field(default=0))],
+                         namespace={"get_max_speed": lambda self: self.max_speed})
+
+c = CarData("BMW", 256, 4096)
+print(c)  # CarData(model='BMW', max_speed=256, price=4096)
+print(c.get_max_speed())  # 256
+
+# Данную ф-цию make_dataclass обычно используют если необходимо сформировать класс данных в процессе
+# работы программы. В остальном используют обычное определение классов через @dataclass
