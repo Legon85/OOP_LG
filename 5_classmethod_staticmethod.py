@@ -54,6 +54,7 @@ print(Vector.validate(5))  # True
 # так же класс-метод validate можно вызывать от имени объекта v:
 print(v.validate(5))  # True
 
+
 # Надо понимать что, метод validate мы не можем использовать для изменения каких-либо значений
 # экземпляров этого класса, поскольку в методе нет ссылки на экземпляры - self
 
@@ -130,14 +131,16 @@ class Vector:
 
     def get_coords(self):
         return self.x, self.y
+
     @staticmethod
     def norm2(x, y):
         """Возвращает квадратичную норму вектора"""
-        return x*x + y*y
+        return x * x + y * y
 
 
 v = Vector(1, 2)
 print(v.norm2(5, 6))  # 61. Вернул квадратичную сумму вектора (5, 6)
+
 
 # При этом статические методы можно вызывать и внутри обычных методов:
 
@@ -165,10 +168,11 @@ class Vector:
 
     def get_coords(self):
         return self.x, self.y
+
     @staticmethod
     def norm2(x, y):
         """Возвращает квадратичную норму вектора"""
-        return x*x + y*y
+        return x * x + y * y
 
 
 v = Vector(10, 20)  # 500. Вернул квадратич. норму из метода norm2 определённого в методе init
